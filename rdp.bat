@@ -3,15 +3,15 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 ::::: ---------- 配置 ----------
-set HOST=192.168.10.110
+set HOST=192.168.0.61
 set DOMAIN=
-set PASSWORD=YD1234567890.
+set PASSWORD=123456
 
 ::::: ---------- 选择起始序号（默认 1） ----------
 set "START=1"
 :promptStart
 set "START_INPUT="
-set /p START_INPUT=请输入起始序号(1-199)，回车默认1: 
+set /p START_INPUT=请输入起始序号(1-500)，回车默认1: 
 if "%START_INPUT%"=="" goto start_ok
 echo %START_INPUT%| findstr /R "^[0-9][0-9]*$" >nul
 if errorlevel 1 goto promptStart
@@ -20,8 +20,8 @@ if %START% LSS 1 goto promptStart
 if %START% GTR 199 goto promptStart
 :start_ok
 
-::::: ---------- 循环从起始序号到 YD199：回车连接，其他键跳过，P 结束 ----------
-for /l %%i in (%START%,1,199) do (
+::::: ---------- 循环从起始序号到 YD500：回车连接，其他键跳过，P 结束 ----------
+for /l %%i in (%START%,1,500) do (
   set "num=00%%i"
   set "USER=YD!num:~-3!"
   set "RDPFILE=%TEMP%\remote_!USER!.rdp"
