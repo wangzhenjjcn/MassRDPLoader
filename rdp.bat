@@ -43,7 +43,7 @@ for /l %%i in (%START%,1,500) do (
   if "%AUTO%"=="1" (
     echo 当前用户 !USER_FULL! ：按回车连接；按P结束；按S跳过 20秒无输入默认连接
     set "NEXT=ENTER"
-    choice /C EPS /N /T 20 /D E >nul
+    choice /C EPS /N /T 10 /D E >nul
     if errorlevel 3 set "NEXT=OTHER"
     if errorlevel 2 set "NEXT=P"
     if errorlevel 1 set "NEXT=ENTER"
