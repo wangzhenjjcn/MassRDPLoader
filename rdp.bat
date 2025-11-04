@@ -3,9 +3,9 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 ::::::: ---------- 配置 ----------
-set HOST=192.168.0.61
+set HOST=localhost
 set DOMAIN=
-set PASSWORD=123456
+set PASSWORD=YD1234567890.
 
 ::::::: ---------- 选择起始序号（默认 1） ----------
 set "START=1"
@@ -23,7 +23,7 @@ if %START% GTR 500 goto promptStart
 ::::::: ---------- 自动模式选择（输入A启用20秒自动继续，回车跳过） ----------
 set "AUTO=0"
 set "AUTO_INPUT="
-set /p AUTO_INPUT=是否启用自动模式? 输入A启用(20秒无按键默认连接)，回车跳过: 
+set /p AUTO_INPUT=是否启用自动模式? 输入A启用(10秒无按键默认连接)，回车跳过: 
 if /I "%AUTO_INPUT%"=="A" set "AUTO=1"
 
 ::::::: ---------- 循环从起始序号到 YD500：回车连接，其他键跳过，P 结束 ----------
@@ -39,9 +39,9 @@ for /l %%i in (%START%,1,500) do (
   set "NEXT="
   set "DO_CONNECT=1"
 
-  rem 自动模式交互（20秒后默认连接）
+  rem 自动模式交互（10秒后默认连接）
   if "%AUTO%"=="1" (
-    echo 当前用户 !USER_FULL! ：按回车连接；按P结束；按S跳过 20秒无输入默认连接
+    echo 当前用户 !USER_FULL! ：按回车连接；按P结束；按S跳过 10秒无输入默认连接
     set "NEXT=ENTER"
     choice /C EPS /N /T 10 /D E >nul
     if errorlevel 3 set "NEXT=OTHER"
