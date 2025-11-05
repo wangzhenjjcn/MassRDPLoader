@@ -2,12 +2,12 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-::::::: ---------- 配置 ----------
+:::::::: ---------- 配置 ----------
 set HOST=localhost
 set DOMAIN=
 set PASSWORD=YD1234567890.
 
-::::::: ---------- 选择起始序号（默认 1） ----------
+:::::::: ---------- 选择起始序号（默认 1） ----------
 set "START=1"
 :promptStart
 set "START_INPUT="
@@ -20,13 +20,13 @@ if %START% LSS 1 goto promptStart
 if %START% GTR 500 goto promptStart
 :start_ok
 
-::::::: ---------- 自动模式选择（输入A启用20秒自动继续，回车跳过） ----------
+:::::::: ---------- 自动模式选择（输入A启用20秒自动继续，回车跳过） ----------
 set "AUTO=0"
 set "AUTO_INPUT="
 set /p AUTO_INPUT=是否启用自动模式? 输入A启用(10秒无按键默认连接)，回车跳过: 
 if /I "%AUTO_INPUT%"=="A" set "AUTO=1"
 
-::::::: ---------- 循环从起始序号到 YD500：回车连接，其他键跳过，P 结束 ----------
+:::::::: ---------- 循环从起始序号到 YD500：回车连接，其他键跳过，P 结束 ----------
 for /l %%i in (%START%,1,500) do (
   set "num=00%%i"
   set "USER=YD!num:~-3!"
@@ -84,6 +84,16 @@ for /l %%i in (%START%,1,500) do (
       echo enablecredsspsupport:i:1
       echo prompt for credentials on client:i:0
       echo promptcredentialonce:i:0
+      echo redirectclipboard:i:0
+      echo redirectprinters:i:0
+      echo redirectcomports:i:0
+      echo redirectsmartcards:i:0
+      echo redirectposdevices:i:0
+      echo drivestoredirect:s:
+      echo devicestoredirect:s:
+      echo audiomode:i:2
+      echo audiocapturemode:i:0
+      echo audioqualitymode:i:0
     )
 
     echo 启动远程桌面连接 - %HOST% - 用户: !USER_FULL!
