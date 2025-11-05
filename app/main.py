@@ -51,6 +51,7 @@ class AppConfig:
     audio_capture: bool = False
 
     silent_connect: bool = True  # 使用 cmdkey 注入凭据免提示
+    suppress_warnings: bool = True  # 忽略远程桌面连接各类安全警告
 
 
 class ConfigStore:
@@ -117,6 +118,19 @@ class RdpWorker(QThread):
         except Exception as e:
             self._emit(f"进程启动失败: {' '.join(args)} -> {e}")
 
+    def _configure_client_warnings(self):
+        if not self.cfg.suppress_warnings:
+            return
+        try:
+            import winreg
+            key = winreg.CreateKey(winreg.HKEY_CURRENT_USER, r"Software\\Microsoft\\Terminal Server Client")
+            # 0 = 始终连接（即使认证失败），1 = 警告，2 = 不连接
+            winreg.SetValueEx(key, "AuthenticationLevelOverride", 0, winreg.REG_DWORD, 0)
+            winreg.CloseKey(key)
+            self._emit("已设置忽略连接认证警告")
+        except Exception as e:
+            self._emit(f"设置忽略警告失败: {e}")
+
     def _write_rdp_file(self, user_full: str) -> str:
         temp_dir = tempfile.gettempdir()
         rdp_path = os.path.join(temp_dir, f"remote_{user_full.replace('\\', '_')}.rdp")
@@ -163,6 +177,9 @@ class RdpWorker(QThread):
         # 非自动模式：只连接一个账号（起始序号），避免一次性全部打开
         if not self.cfg.auto_mode:
             end = start
+
+        # 启动前配置客户端警告策略
+        self._configure_client_warnings()
         for i in range(start, end + 1):
             if self._cancel:
                 break
@@ -271,6 +288,10 @@ class MainWindow(QWidget):
         self.silent = QCheckBox("免提示登录(保存凭据并直连)")
         grid.addWidget(self.silent, row, 1)
 
+        row += 1
+        self.suppress = QCheckBox("忽略所有连接警告")
+        grid.addWidget(self.suppress, row, 1)
+
         # 操作按钮与状态
         row += 1
         btn_layout = QHBoxLayout()
@@ -322,6 +343,7 @@ class MainWindow(QWidget):
         self.audio_cap.setChecked(self.cfg.audio_capture)
 
         self.silent.setChecked(self.cfg.silent_connect)
+        self.suppress.setChecked(self.cfg.suppress_warnings)
 
     def _collect_cfg_from_ui(self) -> AppConfig:
         cfg = AppConfig(
@@ -342,6 +364,7 @@ class MainWindow(QWidget):
             audio_mode={0:0, 1:1, 2:2}[self.audio.currentIndex()],
             audio_capture=self.audio_cap.isChecked(),
             silent_connect=self.silent.isChecked(),
+            suppress_warnings=self.suppress.isChecked(),
         )
         return cfg
 
@@ -366,7 +389,7 @@ class MainWindow(QWidget):
         self.btn_stop.setEnabled(True)
         for w in [self.host, self.domain, self.password, self.start_index, self.end_index,
                   self.auto_mode, self.delay, self.cb_clip, self.cb_prn, self.cb_com, self.cb_smc,
-                  self.cb_pos, self.cb_drv, self.cb_dev, self.audio, self.audio_cap, self.silent]:
+                  self.cb_pos, self.cb_drv, self.cb_dev, self.audio, self.audio_cap, self.silent, self.suppress]:
             w.setEnabled(False)
 
         # 启动 worker
@@ -390,7 +413,7 @@ class MainWindow(QWidget):
         self.btn_stop.setEnabled(False)
         for w in [self.host, self.domain, self.password, self.start_index, self.end_index,
                   self.auto_mode, self.delay, self.cb_clip, self.cb_prn, self.cb_com, self.cb_smc,
-                  self.cb_pos, self.cb_drv, self.cb_dev, self.audio, self.audio_cap, self.silent]:
+                  self.cb_pos, self.cb_drv, self.cb_dev, self.audio, self.audio_cap, self.silent, self.suppress]:
             w.setEnabled(True)
         # 非自动模式：自动将起始序号+1，便于再次点击开始打开下一个
         try:
